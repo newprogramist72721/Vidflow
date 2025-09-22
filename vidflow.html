@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidFlow - Ваш видеопоток</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: white;
+        }
+
+        /* Шапка */
+        header {
+            background: #000;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #222;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff0000;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #121212;
+            color: white;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ff0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Основной контент */
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Сайдбар */
+        .sidebar {
+            width: 240px;
+            padding: 20px;
+            background: #000;
+        }
+
+        .sidebar-item {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .sidebar-item:hover {
+            background: #222;
+        }
+
+        /* Видео сетка */
+        .video-grid {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: #181818;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .video-info {
+            padding: 12px;
+        }
+
+        .video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .channel-name {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #000;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 100px auto;
+            border: 2px solid #333;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #121212;
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .auth-form button {
+            width: 100%;
+            padding: 12px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 15px;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .form-switch:hover {
+            color: #ff0000;
+        }
+
+        /* Видео плеер */
+        #videoPlayer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: none;
+        }
+
+        .player-header {
+            padding: 15px;
+            background: #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .video-container {
+            background: #222;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+        }
+
+        .subscribe-btn {
+            background: #ff0000;
+        }
+
+        .comments-section {
+            margin-top: 30px;
+        }
+
+        .comment {
+            background: #181818;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка -->
+    <header>
+        <div class="logo" onclick="goToHome()">VidFlow</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Поиск видео..." id="searchInput">
+        </div>
+        <div class="auth-buttons" id="authButtons">
+            <button class="auth-btn" onclick="openLoginModal()">Войти</button>
+            <button class="auth-btn" onclick="openRegisterModal()">Регистрация</button>
+        </div>
+        <div class="user-info" id="userInfo">
+            <div class="avatar" id="userAvatar">U</div>
+            <span id="userName">User</span>
+            <button class="auth-btn" onclick="logout()">Выйти</button>
+            <button class="auth-btn" onclick="openUploadModal()">📤 Загрузить</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Сайдбар -->
+        <nav class="sidebar">
+            <div class="sidebar-item">🏠 Главная</div>
+            <div class="sidebar-item">🔥 Популярное</div>
+            <div class="sidebar-item">📺 Подписки</div>
+            <div class="sidebar-item">🎵 Музыка</div>
+            <div class="sidebar-item">🎮 Игры</div>
+            <div class="sidebar-item">📚 Обучение</div>
+        </nav>
+
+        <!-- Лента видео -->
+        <main class="video-grid" id="videoGrid">
+            <!-- Видео будут добавляться здесь -->
+        </main>
+    </div>
+
+    <!-- Модальное окно входа -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeLoginModal()">&times;</span>
+            <h2>Вход в аккаунт</h2>
+            <div class="auth-form">
+                <input type="text" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Пароль">
+                <button onclick="login()">Войти</button>
+                <div class="form-switch" onclick="switchToRegister()">Нет аккаунта? Зарегистрироваться</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeRegisterModal()">&times;</span>
+            <h2>Регистрация</h2>
+            <div class="auth-form">
+                <input type="text" id="regUsername" placeholder="Имя пользователя">
+                <input type="email" id="regEmail" placeholder="Email">
+                <input type="password" id="regPassword" placeholder="Пароль">
+                <button onclick="register()">Зарегистрироваться</button>
+                <div class="form-switch" onclick="switchToLogin()">Уже есть аккаунт? Войти</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно загрузки -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeUploadModal()">&times;</span>
+            <h2>Загрузить видео</h2>
+            <input type="file" id="videoUpload" accept="video/*">
+            <input type="text" id="videoTitle" placeholder="Название видео" style="width: 100%; margin: 10px 0; padding: 10px;">
+            <button onclick="uploadVideo()" style="background: #ff0000; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Загрузить</button>
+        </div>
+    </div>
+
+    <!-- Видео плеер -->
+    <div id="videoPlayer">
+        <div class="player-header">
+            <button class="control-btn" onclick="closeVideoPlayer()">✕ Закрыть</button>
+            <span id="playerTitle"></span>
+        </div>
+        <div class="player-content">
+            <div class="video-container" id="videoContainer">
+                🎬 Видео плеер
+            </div>
+            <div class="player-controls">
+                <button class="control-btn">👍 <span id="likeCount">0</span></button>
+                <button class="control-btn">👎 <span id="dislikeCount">0</span></button>
+                <button class="control-btn subscribe-btn" id="subscribeBtn">📌 Подписаться</button>
+                <button class="control-btn">📤 Поделиться</button>
+            </div>
+            <div class="video-info">
+                <div style="font-size: 20px; font-weight: bold;" id="playerVideoTitle"></div>
+                <div style="color: #aaa; margin-top: 10px;" id="playerChannelInfo"></div>
+                <div style="margin-top: 20px;" id="playerDescription"></div>
+            </div>
+            <div class="comments-section">
+                <h3>Комментарии</h3>
+                <div class="comment">
+                    <strong>User123:</strong> Отличное видео! Спасибо за контент!
+                </div>
+                <div class="comment">
+                    <strong>Viewer456:</strong> Жду новых выпусков!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // База данных
+        let videos = [
+            {
+                id: 1,
+                title: "Как создать сайт за 5 минут",
+                channel: "WebMaster",
+                views: "150K",
+                likes: 154,
+                dislikes: 2,
+                thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400",
+                description: "В этом видео я покажу как быстро создать свой сайт без программирования."
+            },
+            {
+                id: 2,
+                title: "Топ 10 фильмов 2024 года",
+                channel: "КиноМан",
+                views: "2.1M",
+                likes: 3200,
+                dislikes: 45,
+                thumbnail: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400",
+                description: "Обзор лучших фильмов этого года, которые стоит посмотреть."
+            }
+        ];
+
+        let currentUser = null;
+
+        // Регистрация
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!username || !email || !password) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            // Сохраняем пользователя в localStorage
+            const user = {
+                username: username,
+                email: email,
+                avatar: username.charAt(0).toUpperCase()
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            currentUser = user;
+            updateUI();
+            closeRegisterModal();
+            alert('Регистрация успешна!');
+        }
+
+        // Вход
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            // Простая имитация входа
+            const user = {
+                username: email.split('@')[0],
+                email: email,
+                avatar: email.charAt(0).toUpperCase()
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            currentUser = user;
+            updateUI();
+            closeLoginModal();
+            alert('Вход выполнен!');
+        }
+
+        // Выход
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            updateUI();
+            alert('Вы вышли из аккаунта');
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            const authButtons = document.getElementById('authButtons');
+            const userInfo = document.getElementById('userInfo');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+
+            if (currentUser) {
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
+                userAvatar.textContent = currentUser.avatar;
+                userName.textContent = currentUser.username;
+            } else {
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // Модальные окна
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        function openRegisterModal() {
+            document.getElementById('registerModal').style.display = 'block';
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').style.display = 'none';
+        }
+
+        function switchToRegister() {
+            closeLoginModal();
+            openRegisterModal();
+        }
+
+        function switchToLogin() {
+            closeRegisterModal();
+            openLoginModal();
+        }
+
+        // Видео плеер
+        function playVideo(videoId) {
+            const video = videos.find(v => v.id === videoId);
+            if (video) {
+                document.getElementById('playerTitle').textContent = video.title;
+                document.getElementById('playerVideoTitle').textContent = video.title;
+                document.getElementById('playerChannelInfo').textContent = `${video.channel} • ${video.views} просмотров`;
+                document.getElementById('playerDescription').textContent = video.description;
+                document.getElementById('likeCount').textContent = video.likes;
+                document.getElementById('dislikeCount').textContent = video.dislikes;
+                
+                document.getElementById('videoPlayer').style.display = 'block';
+            }
+        }
+
+        function closeVideoPlayer() {
+            document.getElementById('videoPlayer').style.display = 'none';
+        }
+
+        // Загрузка видео
+        function openUploadModal() {
+            if (!currentUser) {
+                alert('Для загрузки видео нужно войти в аккаунт!');
+                openLoginModal();
+                return;
+            }
+            document.getElementById('uploadModal').style.display = 'block';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+        }
+
+        function uploadVideo() {
+            if (!currentUser) return;
+
+            const fileInput = document.getElementById('videoUpload');
+            const titleInput = document.getElementById('videoTitle');
+            
+            if (!fileInput.files[0] || !titleInput.value) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            const newVideo = {
+                id: videos.length + 1,
+                title: titleInput.value,
+                channel: currentUser.username,
+                views: "0",
+                likes: 0,
+                dislikes: 0,
+                thumbnail: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400",
+                description: "Новое видео от " + currentUser.username
+            };
+
+            videos.unshift(newVideo);
+            displayVideos();
+            closeUploadModal();
+            
+            alert('Видео загружено!');
+            fileInput.value = '';
+            titleInput.value = '';
+        }
+
+        // Поиск
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredVideos = videos.filter(video => 
+                video.title.toLowerCase().includes(searchTerm) ||
+                video.channel.toLowerCase().includes(searchTerm)
+            );
+            
+            displayVideos(filteredVideos);
+        });
+
+        // Отображение видео
+        function displayVideos(videosArray = videos) {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+
+            videosArray.forEach(video => {
+                const videoCard = `
+                    <div class="video-card" onclick="playVideo(${video.id})">
+                        <img src="${video.thumbnail}" alt="${video.title}" class="thumbnail">
+                        <div class="video-info">
+                            <div class="video-title">${video.title}</div>
+                            <div class="channel-name">${video.channel} • ${video.views} просмотров</div>
+                        </div>
+                    </div>
+                `;
+                videoGrid.innerHTML += videoCard;
+            });
+        }
+
+        function goToHome() {
+            displayVideos();
+            document.getElementById('searchInput').value = '';
+        }
+
+        // Инициализация
+        function init() {
+            // Проверяем авторизацию
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+            }
+            updateUI();
+            displayVideos();
+        }
+
+        init();
+    </script>
+</body>
+</html>
