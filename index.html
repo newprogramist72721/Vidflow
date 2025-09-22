@@ -3,38 +3,699 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VidFlow - Ваш видеопоток</title>
+    <title>VidFlow - Платформа для видео</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
         }
 
         body {
             background: #0f0f0f;
-            color: white;
+            color: #fff;
         }
 
-        /* Шапка */
+        /* Шапка как в YouTube */
         header {
-            background: #000;
-            padding: 12px 20px;
             display: flex;
             align-items: center;
-            gap: 20px;
-            position: sticky;
+            padding: 0 16px;
+            height: 56px;
+            background: #0f0f0f;
+            position: fixed;
             top: 0;
-            z-index: 100;
-            border-bottom: 1px solid #222;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #272727;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             color: #ff0000;
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .search-container {
+            display: flex;
+            flex: 1;
+            max-width: 640px;
+            margin: 0 40px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0 16px;
+            height: 40px;
+            background: #121212;
+            border: 1px solid #303030;
+            border-radius: 20px 0 0 20px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .search-btn {
+            width: 64px;
+            height: 40px;
+            background: #303030;
+            border: 1px solid #303030;
+            border-radius: 0 20px 20px 0;
+            color: #fff;
             cursor: pointer;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .upload-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .auth-btn {
+            background: #3ea6ff;
+            color: #0f0f0f;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Основной контент */
+        .container {
+            display: flex;
+            margin-top: 56px;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            width: 240px;
+            background: #0f0f0f;
+            padding: 12px 0;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            color: #fff;
+            text-decoration: none;
+            gap: 24px;
+            font-size: 14px;
+        }
+
+        .sidebar-item:hover {
+            background: #272727;
+        }
+
+        .sidebar-item.active {
+            background: #272727;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: #272727;
+            margin: 12px 0;
+        }
+
+        /* Лента видео */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            padding: 24px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .video-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .video-card:hover {
+            transform: scale(1.02);
+        }
+
+        .thumbnail-container {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #272727;
+        }
+
+        .duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .video-info {
+            display: flex;
+            gap: 12px;
+        }
+
+        .channel-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ff0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .channel-name {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .video-meta {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #202020;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-title {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: #121212;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 16px;
+            color: #3ea6ff;
+            cursor: pointer;
+        }
+
+        /* Видео плеер */
+        .video-player {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 3000;
+        }
+
+        .player-header {
+            padding: 16px;
+            background: #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .player-video {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .player-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #272727;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background: #272727;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .subscribe-btn {
+            background: #ff0000;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            .search-container {
+                margin: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка -->
+    <header>
+        <div class="header-left">
+            <button class="menu-btn">≡</button>
+            <a href="#" class="logo">
+                <span class="logo-icon">▶</span>
+                <span>VidFlow</span>
+            </a>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Поиск" id="searchInput">
+            <button class="search-btn">🔍</button>
+        </div>
+
+        <div class="header-right">
+            <button class="upload-btn" onclick="openUploadModal()">📹 Загрузить</button>
+            <button class="auth-btn" onclick="openLoginModal()">Войти</button>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <div class="container">
+        <!-- Боковая панель -->
+        <nav class="sidebar">
+            <a href="#" class="sidebar-item active">
+                <span>🏠</span> Главная
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>🔥</span> Тренды
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>📺</span> Подписки
+            </a>
+            
+            <div class="sidebar-divider"></div>
+            
+            <a href="#" class="sidebar-item">
+                <span>📚</span> Библиотека
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>📜</span> История
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>⏱️</span> Смотреть позже
+            </a>
+        </nav>
+
+        <!-- Лента видео -->
+        <main class="main-content">
+            <div class="video-grid" id="videoGrid">
+                <!-- Видео будут здесь -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно входа -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeLoginModal()">×</button>
+            <h2 class="modal-title">Вход в аккаунт</h2>
+            <div class="form-group">
+                <input type="email" class="form-input" placeholder="Email" id="loginEmail">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-input" placeholder="Пароль" id="loginPassword">
+            </div>
+            <button class="form-btn" onclick="login()">Войти</button>
+            <div class="form-switch" onclick="switchToRegister()">
+                Нет аккаунта? Зарегистрироваться
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeRegisterModal()">×</button>
+            <h2 class="modal-title">Регистрация</h2>
+            <div class="form-group">
+                <input type="text" class="form-input" placeholder="Имя пользователя" id="regUsername">
+            </div>
+            <div class="form-group">
+                <input type="email" class="form-input" placeholder="Email" id="regEmail">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-input" placeholder="Пароль" id="regPassword">
+            </div>
+            <button class="form-btn" onclick="register()">Зарегистрироваться</button>
+            <div class="form-switch" onclick="switchToLogin()">
+                Уже есть аккаунт? Войти
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно загрузки видео -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeUploadModal()">×</button>
+            <h2 class="modal-title">Загрузить видео</h2>
+            <div class="form-group">
+                <input type="file" class="form-input" id="videoUpload" accept="video/*">
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-input" placeholder="Название видео" id="videoTitle">
+            </div>
+            <div class="form-group">
+                <textarea class="form-input" placeholder="Описание видео" id="videoDescription" rows="3"></textarea>
+            </div>
+            <button class="form-btn" onclick="uploadVideo()">📹 Загрузить видео</button>
+        </div>
+    </div>
+
+    <!-- Видео плеер -->
+    <div class="video-player" id="videoPlayer">
+        <div class="player-header">
+            <button class="close-btn" onclick="closeVideoPlayer()">×</button>
+        </div>
+        <div class="player-content">
+            <div class="player-video">
+                🎬 Видео плеер
+            </div>
+            <h1 class="player-title" id="playerTitle"></h1>
+            <div class="player-info">
+                <div>
+                    <span id="playerViews">0 просмотров</span> • 
+                    <span id="playerDate">сегодня</span>
+                </div>
+                <div class="player-actions">
+                    <button class="action-btn">👍 <span id="likeCount">0</span></button>
+                    <button class="action-btn">👎 <span id="dislikeCount">0</span></button>
+                    <button class="action-btn">📤 Поделиться</button>
+                    <button class="action-btn subscribe-btn">📌 Подписаться</button>
+                </div>
+            </div>
+            <div class="video-description" id="playerDescription"></div>
+        </div>
+    </div>
+
+    <script>
+        // База данных видео
+        let videos = [
+            {
+                id: 1,
+                title: "Как создать сайт за 5 минут - полное руководство",
+                channel: "WebMaster",
+                channelLetter: "W",
+                views: "154K",
+                date: "3 дня назад",
+                duration: "14:25",
+                likes: 1542,
+                dislikes: 23,
+                description: "В этом подробном руководстве я покажу как создать свой сайт с нуля без программирования. От идеи до запуска в интернете."
+            },
+            {
+                id: 2,
+                title: "Топ 10 фильмов 2024 года которые стоит посмотреть",
+                channel: "КиноОбзор",
+                channelLetter: "К",
+                views: "2.1M",
+                date: "2 недели назад",
+                duration: "22:10",
+                likes: 32450,
+                dislikes: 456,
+                description: "Обзор лучших фильмов этого года от голливудских блокбастеров до независимого кино."
+            },
+            {
+                id: 3,
+                title: "Рецепт идеального стейка - шеф-повар раскрывает секреты",
+                channel: "Готовим с шефом",
+                channelLetter: "Г",
+                views: "890K",
+                date: "1 месяц назад",
+                duration: "18:33",
+                likes: 15600,
+                dislikes: 234,
+                description: "Профессиональный шеф-повар показывает все этапы приготовления идеального стейка дома."
+            }
+        ];
+
+        let currentUser = null;
+
+        // Инициализация
+        function init() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateHeader();
+            }
+            displayVideos();
+        }
+
+        // Обновление шапки
+        function updateHeader() {
+            const authBtn = document.querySelector('.auth-btn');
+            const uploadBtn = document.querySelector('.upload-btn');
+            
+            if (currentUser) {
+                authBtn.textContent = currentUser.username;
+                authBtn.style.background = '#272727';
+                uploadBtn.style.display = 'block';
+            } else {
+                authBtn.textContent = 'Войти';
+                authBtn.style.background = '#3ea6ff';
+                uploadBtn.style.display = 'block';
+            }
+        }
+
+        // Регистрация
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!username || !email || !password) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            const user = {
+                username: username,
+                email: email,
+                joinDate: new Date().toLocaleDateString()
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            currentUser = user;
+            updateHeader();
+            closeRegisterModal();
+            alert(`Добро пожаловать, ${username}!`);
+        }
+
+        // Вход
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            const user = {
+                username: email.split('@')[0],
+                email: email,
+                joinDate: new Date().toLocaleDateString()
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            currentUser = user;
+            updateHeader();
+            closeLoginModal();
+            alert('Вход выполнен успешно!');
+        }
+
+        // Загрузка видео
+        function uploadVideo() {
+            if (!currentUser) {
+                alert('Для загрузки видео нужно войти в аккаунт');
+                closeUploadModal();
+                openLoginModal();
+                return;
+            }
+
+            const fileInput = document.getElementById('videoUpload');
+            const titleInput = document.getElementById('videoTitle');
+            const descInput = document.getElementById('videoDescription');
+
+            if (!fileInput.files[0] || !titleInput.value) {
+                alert('Заполните обязательные поля!');
+                return;
+            }
+
+            const newVideo = {
+                id: videos.length + 1,
+                title: titleInput.value,
+                channel: currentUser.username,
+                channelLetter: currentUser.username.charAt(0).toUpperCase(),
+                views: "0",
+                date: "только что",
+                duration: "0:00",
+                likes: 0,
+                dislikes: 0,
+                description: descInput.value || "Новое видео от " + currentUser.username
+            };
+
+            videos.unshift(newVide            cursor: pointer;
         }
 
         .search-bar {
